@@ -57,3 +57,4 @@ def test_users_list_for_permissions(
     assert "is_admin" not in content
     assert "is_superadmin" not in content
     assert "created_at" in content
+    assert "permissions" in content

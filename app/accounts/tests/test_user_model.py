@@ -3,6 +3,8 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
 
+from accounts.models import Permissions
+
 
 pytestmark = pytest.mark.django_db
 
@@ -104,3 +106,14 @@ def test_has_module_perm_should_return_is_admin_should_succeed(
     user.is_admin = True
     user.save()
     assert user.has_module_perms(user) is True
+
+
+def test_user_add_permissions_should_succed(create_superuser):
+    """Test add permissions to one user should succedd"""
+    admin = create_superuser
+    created_perm = Permissions.objects.create(name="admin")
+    assert admin.permissions.count() == 0
+    admin.permissions.add(created_perm)
+    assert admin.permissions.count() == 1
+    perm = admin.permissions.all()[0]
+    assert perm == created_perm
