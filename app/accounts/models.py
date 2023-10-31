@@ -1,5 +1,8 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.db.models.constraints import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 class UserManager(BaseUserManager):
@@ -30,6 +33,9 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
+    id = models.UUIDField(
+        default=uuid.uuid4, unique=True, primary_key=True, editable=False
+    )
     email = models.EmailField(
         verbose_name="email address",
         max_length=255,
@@ -44,6 +50,7 @@ class User(AbstractBaseUser):
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
+    permissions = models.ManyToManyField("Permissions")
 
     USERNAME_FIELD = "email"
 
@@ -63,3 +70,31 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self) -> bool:
         return self.is_admin
+
+
+class Permissions(models.Model):
+    """Model who habe all permissions assigned to user."""
+
+    class AdminChoices(models.TextChoices):
+        """Choices class for permission"""
+
+        ADMIN = "admin", _("Admin")
+        GARAZE_ADMIN = "garaze_admin", _("Garaze_admin")
+        TECHNICIAN = "technician", _("Technicial")
+        B2B = "b2b", _("b2b")
+        CUSTOMER = "customer", _("Customer")
+
+    id = models.UUIDField(
+        default=uuid.uuid4, unique=True, primary_key=True, editable=False
+    )
+
+    name = models.CharField(unique=True, choices=AdminChoices.choices)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        self.full_clean()
+        return super().save(force_insert, force_update, using, update_fields)

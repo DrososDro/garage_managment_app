@@ -1,11 +1,8 @@
 from django.contrib import admin
-from accounts.models import User
-from django import forms
+from accounts.models import Permissions, User
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from django.core.exceptions import ValidationError
 
 
 # Register your models here.
@@ -34,6 +31,7 @@ class UserAdmin(BaseUserAdmin):
                     "is_admin",
                     "is_superadmin",
                     "is_active",
+                    "permissions",
                 ]
             },
         ),
@@ -63,4 +61,5 @@ class UserAdmin(BaseUserAdmin):
 
 
 admin.site.register(User, UserAdmin)
+admin.site.register(Permissions)
 admin.site.unregister(Group)
