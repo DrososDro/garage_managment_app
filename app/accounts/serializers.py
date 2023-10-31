@@ -3,7 +3,8 @@ Serializer for the account model
 """
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from django.conf import settings
+
+from accounts.utils import send_activation_mail
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -17,4 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create the user with the validated_data"""
-        return get_user_model().objects.create_user(**validated_data)
+        user = get_user_model().objects.create_user(**validated_data)
+        send_activation_mail(self.context["request"], user)
+        return user
