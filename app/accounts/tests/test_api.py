@@ -10,6 +10,12 @@ pytestmark = pytest.mark.django_db
 
 
 CREATE_USER_URL = reverse("accounts:create_user")
+
+
+def rev_activate(uidb, token):
+    return reverse("accounts:activate", args=[uidb, token])
+
+
 client = APIClient()
 
 
@@ -86,3 +92,40 @@ def test_create_user_fail_send_email_shouldnt_call(
     patched_activation_mail.return_value = False
 
     assert patched_activation_mail.call_count == 0
+
+
+# -------------------- Test activate method --------------------
+
+
+def test_activate_API_call_should_succeed(
+    settings,
+    def_user,
+    mailoutbox,
+):
+    """Test activate api with correct data"""
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    res = client.post(CREATE_USER_URL, def_user)
+
+    # test if the user created successfully
+    assert res.status_code == status.HTTP_201_CREATED
+    assert len(mailoutbox) == 1
+
+    # take the mailbox message and convert it to activate
+    mail_body = mailoutbox[0].body.split("\n")
+    activation_url = [i for i in mail_body if "http://" in i][0]
+    *_, uidb, token, no_need = activation_url.split("/")
+
+    # make a request to activate api
+    ACTIVATE = rev_activate(uidb, token)
+    res = client.post(ACTIVATE)
+    assert res.status_code == status.HTTP_200_OK
+    assert res.data == "Activations Success"
+
+
+def test_activate_failed():
+    """Test raise value error and fail the activation"""
+
+    ACTIVATE = rev_activate("somethin", "token")
+    res = client.post(ACTIVATE)
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+    assert res.data == "Activation Fail"

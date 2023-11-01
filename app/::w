@@ -1,7 +1,7 @@
 """
 Tests for the email in utils
 """
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 from django.urls import reverse
 from django.views.decorators.debug import HttpRequest
 import pytest
@@ -16,28 +16,15 @@ CREATE_USER_URL = reverse("accounts:create_user")
 client = APIClient()
 
 
-def uidb_mock(*args, **kwargs):
-    return "uidb64"
-
-
-@patch("accounts.utils.get_current_site")
-@patch("accounts.utils.urlsafe_base64_encode", side_effect=uidb_mock)
-@patch("accounts.utils.default_token_generator.make_token")
+@patch("accounts.utils.get_current_site.domain")
 def test_send_creation_email_should_succeed(
-    patched_token,
-    patched_uidb,
-    patched_site,
-    mailoutbox,
-    settings,
-    def_user,
+    patched_site, mailoutbox, settings, def_user
 ):
     """Test send creation email with correct data"""
-    patched_site.return_value.domain = "xaos"
-    patched_token.return_value = "token"
+    patched_site.return_value = "xaos"
     settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
-
     mail_subject = "Activate account for Our Site"
-    site = "http://xaos/activate/uidb64/token/"
+    site = "/activate/"
 
     assert len(mailoutbox) == 0
     res = client.post(CREATE_USER_URL, def_user)
