@@ -1,15 +1,18 @@
 from django.contrib.auth import get_user_model
 import pytest
+from rest_framework.test import APIClient
 
 
 @pytest.fixture
 def create_user():
-    def _create_user_factory(*, email, password):
+    def _create_user_factory(*, email, password, is_active=True):
         user = get_user_model().objects.create_user(
             email=email,
             password=password,
         )
-        user.is_active = True
+        if is_active:
+            user.is_active = True
+
         user.save()
         return user
 
@@ -35,3 +38,12 @@ def def_user():
         "password": "testPass1234*",
     }
     return user_dict
+
+
+@pytest.fixture
+def auth_api_client(create_superuser):
+    """Api client force authenticate"""
+    user = create_superuser
+    client = APIClient()
+    client.force_authenticate(user)
+    return client

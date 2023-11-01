@@ -21,6 +21,8 @@ class CreateUserView(generics.CreateAPIView):
 class ActivateEmail(views.APIView):
     """Activate Email address and take the basic Permission."""
 
+    serializer_class = None
+
     def post(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))

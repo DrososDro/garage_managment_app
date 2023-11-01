@@ -2,7 +2,6 @@ import pytest
 from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-
 from rest_framework.test import APIClient
 from rest_framework import status
 
@@ -10,6 +9,8 @@ pytestmark = pytest.mark.django_db
 
 
 CREATE_USER_URL = reverse("accounts:create_user")
+TOKEN = reverse("accounts:token")
+REFRESH_TOKEN = reverse("accounts:token_refresh")
 
 
 def rev_activate(uidb, token):
@@ -113,7 +114,7 @@ def test_activate_API_call_should_succeed(
     # take the mailbox message and convert it to activate
     mail_body = mailoutbox[0].body.split("\n")
     activation_url = [i for i in mail_body if "http://" in i][0]
-    *_, uidb, token, no_need = activation_url.split("/")
+    *_, uidb, token, _ = activation_url.split("/")
 
     # make a request to activate api
     ACTIVATE = rev_activate(uidb, token)
@@ -129,3 +130,67 @@ def test_activate_failed():
     res = client.post(ACTIVATE)
     assert res.status_code == status.HTTP_400_BAD_REQUEST
     assert res.data == "Activation Fail"
+
+
+# -------------------- Test JWT Token --------------------
+
+
+def test_jwt_create_token_with_is_active_user_should_succeed(
+    create_user,
+    def_user,
+):
+    """Test jwt to create token with active user  and use it shoudl succedd"""
+
+    create_user(**def_user)
+
+    res = client.post(TOKEN, def_user)
+
+    assert res.status_code == status.HTTP_200_OK
+    assert "access" in res.data
+    assert "refresh" in res.data
+
+
+def test_jwt_create_token_with_inactive_user_should_fail(
+    create_user,
+    def_user,
+):
+    """Tesg jwt with inactive user should fail"""
+
+    create_user(**def_user, is_active=False)
+
+    res = client.post(TOKEN, def_user)
+
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "access" not in res.data
+    assert "refresh" not in res.data
+
+
+def test_jwt_create_token_with_wrong_credentials_should_fail(
+    create_user,
+    def_user,
+):
+    """Test jwt create token with wrong credentials"""
+    create_user(**def_user, is_active=False)
+    def_user["password"] = "123"
+
+    res = client.post(TOKEN, def_user)
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "access" not in res.data
+    assert "refresh" not in res.data
+
+
+def test_jwt_refresh_token_with_correct_credentials_should_succeed(
+    def_user,
+    create_user,
+):
+    """Test refresh token with correct credentials should succeed"""
+    create_user(**def_user)
+
+    res = client.post(TOKEN, def_user)
+    refresh = res.data["refresh"]
+    payload = {"refresh": refresh}
+
+    res = client.post(REFRESH_TOKEN, payload)
+    assert res.status_code == status.HTTP_200_OK
+    assert "access" in res.data
+    assert "refresh" not in res.data
