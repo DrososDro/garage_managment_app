@@ -1,9 +1,11 @@
-from django.urls import path
+from django.urls import include, path
 from accounts import views
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from rest_framework.routers import DefaultRouter
+
 
 app_name = "accounts"
 urlpatterns = [
@@ -26,5 +28,16 @@ urlpatterns = [
         "token/refresh/",
         TokenRefreshView.as_view(),
         name="token_refresh",
+    ),
+    path("my-account/", views.MyAccountView.as_view(), name="my_account"),
+    path(
+        "reset-password-email",
+        views.ResetPassword.as_view(),
+        name="reset_password_email",
+    ),
+    path(
+        "reset-password-submit/<str:uidb64>/<str:token>/",
+        views.ResetPasswordSubmit.as_view(),
+        name="reset_password_submit",
     ),
 ]

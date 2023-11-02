@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
+from rest_framework.request import Request
 
 pytestmark = pytest.mark.django_db
 
@@ -11,10 +12,16 @@ pytestmark = pytest.mark.django_db
 CREATE_USER_URL = reverse("accounts:create_user")
 TOKEN = reverse("accounts:token")
 REFRESH_TOKEN = reverse("accounts:token_refresh")
+MY_ACCOUNT = reverse("accounts:my_account")
+RESET_PASS = reverse("accounts:reset_password_email")
 
 
 def rev_activate(uidb, token):
     return reverse("accounts:activate", args=[uidb, token])
+
+
+def rev_resset_pass(uidb, token):
+    return reverse("accounts:reset_password_submit", args=[uidb, token])
 
 
 client = APIClient()
@@ -132,6 +139,48 @@ def test_activate_failed():
     assert res.data == "Activation Fail"
 
 
+# -------------------- Test reset_passowd method --------------------
+
+
+def test_reset_password_submit_API_call_should_succeed(
+    settings,
+    def_user,
+    mailoutbox,
+    create_user,
+):
+    """Test reset passwork submit api with correct data"""
+    settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    user = create_user(**def_user)
+
+    res = client.post(RESET_PASS, {"email": def_user["email"]})
+
+    # test if the user created successfully
+    assert res.status_code == status.HTTP_200_OK
+    assert len(mailoutbox) == 1
+
+    # take the mailbox message and convert it to activate
+    mail_body = mailoutbox[0].body.split("\n")
+    reset_url = [i for i in mail_body if "http://" in i][0]
+    *_, uidb, token, _ = reset_url.split("/")
+
+    # make a request to activate api
+    RESET = rev_resset_pass(uidb, token)
+    res = client.post(RESET, {"password": "testpasDrosos"})
+    assert res.status_code == status.HTTP_200_OK
+    assert res.data == "Password reset Successfully"
+    user.refresh_from_db()
+    assert user.check_password("testpasDrosos") is True
+
+
+def test_reset_password_submit_failed():
+    """Test raise value error and fail the reset password submit"""
+
+    RESET = rev_resset_pass("somethin", "token")
+    res = client.post(RESET)
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+    assert res.data == "Passowrd reset Fail"
+
+
 # -------------------- Test JWT Token --------------------
 
 
@@ -194,3 +243,120 @@ def test_jwt_refresh_token_with_correct_credentials_should_succeed(
     assert res.status_code == status.HTTP_200_OK
     assert "access" in res.data
     assert "refresh" not in res.data
+
+
+def test_reset_passowrd_link_wrong_email_should_fail():
+    """Test the reset pass api with wrong email"""
+    res = client.post(RESET_PASS, {"email": "something@dontexist.com"})
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+    assert res.data == "Give a Valid email"
+
+
+def test_reset_email_with_empty_mail_should_fail():
+    """Test reset email with empty email"""
+    res = client.post(RESET_PASS, {"email": ""})
+    assert res.status_code == status.HTTP_400_BAD_REQUEST
+    assert res.data == "Give a Valid email"
+
+
+@patch("accounts.views.send_reset_mail")
+def test_reset_email_with_corect_mail_should_succeed(
+    patched_send_mail,
+    def_user,
+    create_user,
+):
+    """Test reset mail with correct mail"""
+    user = create_user(**def_user)
+    res = client.post(RESET_PASS, {"email": def_user["email"]})
+    assert res.status_code == status.HTTP_200_OK
+    assert res.data == "Reset email Sendt"
+    assert patched_send_mail.call_count == 1
+
+
+# -------------------- Test my account --------------------
+
+#  ---------- Unauthorized tests  ----------
+
+
+def test_my_account_unauthorized_should_fail():
+    """Test get my-account with an Unauthorized user should fail"""
+
+    res = client.get(MY_ACCOUNT)
+    error_message = "Authentication credentials were not provided."
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+    assert str(res.data["detail"]) == error_message
+
+
+def test_unauthenticated_put_mathod_should_fail():
+    """Test my-account put method with unauth user should fail"""
+    res = client.put(MY_ACCOUNT, {"email": "something"})
+    error_message = "Authentication credentials were not provided."
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+    assert str(res.data["detail"]) == error_message
+
+
+def test_unauthenticated_patch_mathod_should_fail():
+    """Test my-account patch method with unauth user should fail"""
+    res = client.patch(MY_ACCOUNT, {"email": "something"})
+    error_message = "Authentication credentials were not provided."
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+    assert str(res.data["detail"]) == error_message
+
+
+#  ---------- Authorized tests  ----------
+
+
+def test_get_my_account_should_succed(
+    auth_api_client,
+    def_user,
+):
+    """get user data for auth user"""
+
+    res = auth_api_client.get(MY_ACCOUNT)
+    assert res.status_code == status.HTTP_200_OK
+    assert res.data["email"] == def_user["email"]
+
+
+def test_put_method_change_email_password_should_succeed(
+    auth_api_client,
+):
+    """Test put method update"""
+    payload = {"email": "test@test.com", "password": "12345sfasgdas"}
+
+    res = auth_api_client.put(MY_ACCOUNT, payload)
+
+    assert res.status_code == status.HTTP_200_OK
+    user = get_user_model().objects.get(id=res.data["id"])
+
+    assert user.email == payload["email"]
+    assert user.check_password(payload["password"]) is True
+    assert res.data["email"] == payload["email"]
+    assert "password" not in res.data
+
+
+def test_patch_method_change_email_should_succeed(
+    auth_api_client,
+):
+    """Test patch methon update email"""
+    payload = {"email": "test@test.com"}
+
+    res = auth_api_client.patch(MY_ACCOUNT, payload)
+
+    assert res.status_code == status.HTTP_200_OK
+    user = get_user_model().objects.get(id=res.data["id"])
+
+    assert user.email == payload["email"]
+    assert res.data["email"] == payload["email"]
+    assert "password" not in res.data
+
+
+def test_patch_method_change_password_should_succeed(
+    auth_api_client,
+):
+    """Test patch method update pass should succeed"""
+    payload = {"password": "testpassOk"}
+    res = auth_api_client.patch(MY_ACCOUNT, payload)
+
+    assert res.status_code == status.HTTP_200_OK
+    user = get_user_model().objects.get(id=res.data["id"])
+    assert user.check_password(payload["password"]) is True

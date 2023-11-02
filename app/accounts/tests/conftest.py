@@ -41,9 +41,9 @@ def def_user():
 
 
 @pytest.fixture
-def auth_api_client(create_superuser):
+def auth_api_client(create_user, def_user):
     """Api client force authenticate"""
-    user = create_superuser
+    user = create_user(**def_user)
     client = APIClient()
     client.force_authenticate(user)
     return client

@@ -20,7 +20,30 @@ def send_activation_mail(request, user):
 
     {site}
 
-    if this email is now for you please delete it.
+    if this email is not for you please delete it.
+    """
+    send_mail(
+        mail_subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+    )
+
+
+def send_reset_mail(request, user):
+    curent_site = get_current_site(request)
+    uidb = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+
+    site = f"http://{curent_site.domain}/reset/{uidb}/{token}/"
+
+    mail_subject = "Reset password"
+    message = f"""
+    Click the folowing link to reset your account
+
+    {site}
+
+    if this email is not for you please delete it.
     """
     send_mail(
         mail_subject,
