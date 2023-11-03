@@ -152,3 +152,16 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(hours=9),
 }
+
+
+# set the celery timezone
+CELERY_TIMEZONE = "UTC"
+
+# set the celery broker url
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+
+# set the celery result backend
+CELERY_RESULT_BACKEND = os.environ.get(
+    "CELERY_BACKEND",
+    "redis://redis:6379/0",
+)

@@ -34,27 +34,27 @@ services:
       - EMAIL_HOST=drosostest@gmail.com
     depends_on:
       - db
-      # - celery
-      # - redis
+      - celery
+      - redis
 
-      # celery:
-      #   container_name: celery
-      #   build:
-      #     context: .
-      #   command: celery --app=vms worker -l INFO
-      #   volumes:
-      #     - ./app:/app
-      #   environment:
-      #     - DB_HOST=db
-      #     - DB_NAME=devdb
-      #     - DB_USER=devuser
-      #     - DB_PASS=changeme
-      #   depends_on:
-      #     - redis
-      #     - db
-      #
-      # redis:
-      #   image: redis:7.0.11-alpine
+  celery:
+    container_name: celery
+    build:
+      context: .
+    command: celery --app=garage_app worker -l INFO
+    volumes:
+      - ./app:/app
+    environment:
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+    depends_on:
+      - redis
+      - db
+
+  redis:
+    image: redis:7.0.11-alpine
 
 volumes:
   dev-db-data:
