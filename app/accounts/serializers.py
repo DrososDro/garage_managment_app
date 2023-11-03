@@ -39,6 +39,8 @@ class ResetSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(serializers.Serializer):
+    """Reset Password Submit serializer"""
+
     password = serializers.CharField(
         style={"input_type": "password"},
         trim_whitespace=False,
