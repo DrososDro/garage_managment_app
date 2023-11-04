@@ -117,3 +117,15 @@ def test_user_add_permissions_should_succed(create_superuser):
     assert admin.permissions.count() == 1
     perm = admin.permissions.all()[0]
     assert perm == created_perm
+
+
+def test_user_permissions_should_return_a_set_of_permissions(create_superuser):
+    """Test add permissions to one user should succedd"""
+    admin = create_superuser
+    admin_perm = Permissions.objects.create(name="admin")
+    customer_perm = Permissions.objects.create(name="customer")
+    admin.permissions.add(admin_perm)
+    admin.permissions.add(customer_perm)
+
+    assert "admin" in admin.user_perms
+    assert "customer" in admin.user_perms

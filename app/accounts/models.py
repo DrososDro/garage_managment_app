@@ -71,6 +71,11 @@ class User(AbstractBaseUser):
     def is_staff(self) -> bool:
         return self.is_admin
 
+    @property
+    def user_perms(self) -> list:
+        """Custom user permissions"""
+        return {i.name for i in self.permissions.all()}
+
 
 class Permissions(models.Model):
     """Model who habe all permissions assigned to user."""
