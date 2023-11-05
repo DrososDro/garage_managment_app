@@ -29,6 +29,7 @@ urlpatterns = [
         name="docs",
     ),
     path("accounts/", include("accounts.urls")),
+    path("vehicles/", include("vehicles.urls")),
 ]
 
 

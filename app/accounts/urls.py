@@ -1,10 +1,9 @@
-from django.urls import include, path
+from django.urls import path
 from accounts import views
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from rest_framework.routers import DefaultRouter
 
 
 app_name = "accounts"
