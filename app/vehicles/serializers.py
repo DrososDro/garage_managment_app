@@ -19,14 +19,12 @@ class VehicleBrandSerializer(serializers.ModelSerializer):
 class VehicleModelSerializer(serializers.ModelSerializer):
     family = VehicleFamilySerializer(read_only=True)
     brand = VehicleBrandSerializer(read_only=True)
-    brands = serializers.ChoiceField(
-        choices=(),
+    brands = serializers.CharField(
         required=False,
         write_only=True,
     )
 
-    families = serializers.ChoiceField(
-        choices=(),
+    families = serializers.CharField(
         required=False,
         write_only=True,
     )
@@ -54,12 +52,16 @@ class VehicleModelSerializer(serializers.ModelSerializer):
         obj.save()
         return obj
 
-    def get_fields(self):
-        field = super().get_fields()
-        brands_choices = VehicleBrand.objects.values_list("name", flat=True)
-        families_choices = VehicleFamily.objects.values_list("name", flat=True)
-
-        field["brands"].choices = brands_choices or ["default"]
-        field["families"].choices = families_choices or ["default"]
-
-        return field
+    def update(self, instance, validated_data):
+        brands = validated_data.pop("brands", None)
+        family = validated_data.pop("families", None)
+        if brands:
+            vh_brand, _ = VehicleBrand.objects.get_or_create(name=brands)
+            instance.brand = vh_brand
+        if family:
+            vh_fam, _ = VehicleFamily.objects.get_or_create(name=family)
+            instance.family = vh_fam
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance

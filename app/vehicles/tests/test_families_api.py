@@ -3,7 +3,7 @@ from django.urls import reverse, resolve
 from rest_framework import status
 from vehicles.views import BaseVehiclesFamilyViewset
 
-from vehicles.models import VehicleFamily
+from vehicles.models import VehicleBrand, VehicleFamily, VehicleModel
 
 pytestmark = pytest.mark.django_db
 
@@ -14,6 +14,10 @@ VEHICLE_MODEL_URL = reverse("vehicles:vehiclemodel-list")
 
 def vehicle_family_url_with_id(id):
     return reverse("vehicles:vehiclefamily-detail", args=[id])
+
+
+def vehicle_model_rev_id(id):
+    return reverse("vehicles:vehiclemodel-detail", args=[id])
 
 
 # -------------------- test  vehicle Family apis --------------------
@@ -215,26 +219,274 @@ def test_model_is_subclass_of_BaseFamilies():
     assert issubclass(resolve_cls, BaseVehiclesFamilyViewset)
 
 
-# # @pytest.mark.xfail
-# def test_model_post_method_create_and_family_and_brand_should_succeed(
-#     auth_client,
-# ):
-#     """Test the vehicle model should able to create and family and brand tags"""
-#
-#     client = auth_client(perm="admin")
-#     import base64
-#     import json
-#     from django.test.client import encode_file, encode_multipart
-#
-#     encode = base64.b64encode(temporary_image().read())
-#
-#     payload = {
-#         "name": "A4",
-#         "image": encode,
-#         "family": {"name": "Road", "image": encode},
-#         "brand": {"name": "Audi"},
-#     }
-#     content_type = "multipart/form-data"
-#     res = client.post(VEHICLE_MODEL_URL, payload, format="json")
-#     print(res.data)
-#     print(res.status_code)
+def test_model_post_method_create_with_family_and_brand_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to create family and brand tags"""
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "families": "test",
+        "brands": "brand",
+    }
+    res = client.post(VEHICLE_MODEL_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_201_CREATED
+    assert "A4" == res.data["name"]
+    assert "test" == res.data["family"]["name"]
+    assert "brand" == res.data["brand"]["name"]
+
+
+def test_model_post_method_create_with_brand_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to create brand tags"""
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "brands": "brand",
+    }
+    res = client.post(VEHICLE_MODEL_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_201_CREATED
+    assert "A4" == res.data["name"]
+    assert res.data["family"] is None
+    assert "brand" == res.data["brand"]["name"]
+
+
+def test_model_post_method_create_with_family_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to create family  tags"""
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "families": "test",
+    }
+    res = client.post(VEHICLE_MODEL_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_201_CREATED
+    assert "A4" == res.data["name"]
+    assert "test" == res.data["family"]["name"]
+    assert res.data["brand"] is None
+
+
+def test_model_post_method_create_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to create tags"""
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+    }
+    res = client.post(VEHICLE_MODEL_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_201_CREATED
+    assert "A4" == res.data["name"]
+    assert res.data["family"] is None
+    assert res.data["brand"] is None
+
+
+def test_model_patch_method_with_family_and_brand_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to patch family and brand tags"""
+    vh_model = VehicleModel.objects.create(name="machine")
+    print(vh_model.id)
+    REV_URL = vehicle_model_rev_id(vh_model.id)
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "families": "test",
+        "brands": "brand",
+    }
+    print(REV_URL)
+    res = client.patch(REV_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_200_OK
+    assert "A4" == res.data["name"]
+    assert "test" == res.data["family"]["name"]
+    assert "brand" == res.data["brand"]["name"]
+
+
+def test_model_patch_method_with_brand_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to patch brand tags"""
+    vh_model = VehicleModel.objects.create(name="machine")
+    REV_URL = vehicle_model_rev_id(vh_model.id)
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "brands": "brand",
+    }
+    res = client.patch(REV_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_200_OK
+    assert "A4" == res.data["name"]
+    assert res.data["family"] is None
+    assert "brand" == res.data["brand"]["name"]
+
+
+def test_model_patch_method_with_family_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to patch family  tags"""
+    vh_model = VehicleModel.objects.create(name="machine")
+    REV_URL = vehicle_model_rev_id(vh_model.id)
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "families": "test",
+    }
+    res = client.patch(REV_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_200_OK
+    assert "A4" == res.data["name"]
+    assert "test" == res.data["family"]["name"]
+    assert res.data["brand"] is None
+
+
+def test_model_patch_method_create_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to patch model"""
+    vh_model = VehicleModel.objects.create(name="machine")
+    REV_URL = vehicle_model_rev_id(vh_model.id)
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+    }
+    res = client.patch(REV_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_200_OK
+    assert "A4" == res.data["name"]
+    assert res.data["family"] is None
+    assert res.data["brand"] is None
+
+
+def test_model_put_method_with_family_and_brand_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to patch family and brand tags"""
+    vh_model = VehicleModel.objects.create(name="machine")
+    print(vh_model.id)
+    REV_URL = vehicle_model_rev_id(vh_model.id)
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "families": "test",
+        "brands": "brand",
+    }
+    print(REV_URL)
+    res = client.put(REV_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_200_OK
+    assert "A4" == res.data["name"]
+    assert "test" == res.data["family"]["name"]
+    assert "brand" == res.data["brand"]["name"]
+
+
+def test_model_put_method_with_brand_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to patch brand tags"""
+    vh_model = VehicleModel.objects.create(name="machine")
+    REV_URL = vehicle_model_rev_id(vh_model.id)
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "brands": "brand",
+    }
+    res = client.put(REV_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_200_OK
+    assert "A4" == res.data["name"]
+    assert res.data["family"] is None
+    assert "brand" == res.data["brand"]["name"]
+
+
+def test_model_put_method_with_family_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to patch family  tags"""
+    vh_model = VehicleModel.objects.create(name="machine")
+    REV_URL = vehicle_model_rev_id(vh_model.id)
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "families": "test",
+    }
+    res = client.put(REV_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_200_OK
+    assert "A4" == res.data["name"]
+    assert "test" == res.data["family"]["name"]
+    assert res.data["brand"] is None
+
+
+def test_model_put_method_create_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to patch model"""
+    vh_model = VehicleModel.objects.create(name="machine")
+    REV_URL = vehicle_model_rev_id(vh_model.id)
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+    }
+    res = client.put(REV_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_200_OK
+    assert "A4" == res.data["name"]
+    assert res.data["family"] is None
+    assert res.data["brand"] is None
+
+
+def test_model_delete_method_with_brand_should_succeed(
+    auth_client,
+):
+    """Test the vehicle model should able to patch brand tags"""
+    vh_model = VehicleModel.objects.create(name="machine")
+    REV_URL = vehicle_model_rev_id(vh_model.id)
+
+    client = auth_client(perm="admin")
+
+    payload = {
+        "name": "A4",
+        "image": temporary_image(),
+        "brands": "brand",
+    }
+    res = client.put(REV_URL, payload, format="multipart")
+    assert res.status_code == status.HTTP_200_OK
+    assert "A4" == res.data["name"]
+    assert res.data["family"] is None
+    assert "brand" == res.data["brand"]["name"]
+
+    res = client.delete(REV_URL)
+    assert VehicleBrand.objects.filter(name="brand").exists() is True
+    assert res.status_code == status.HTTP_204_NO_CONTENT
