@@ -42,11 +42,14 @@ class VehicleFamilyViewSets(BaseVehiclesFamilyViewset):
     queryset = VehicleFamily.objects.all()
 
 
-# class VehicleBrandViewSets(BaseVehiclesFamilySerializer):
-#     serializer_class = serializers.VehicleBrandSerializer
-#     queryset = VehicleBrand.objects.all()
+class VehicleBrandViewSets(BaseVehiclesFamilyViewset):
+    """Viewset for VehicleBrand"""
+
+    serializer_class = serializers.VehicleBrandSerializer
+    queryset = VehicleBrand.objects.all()
+
+
 #
-#
-# class VehicleModelViewSets(BaseVehiclesFamilySerializer):
-#     serializer_class = serializers.VehicleModelSerializer
-#     queryset = VehicleModel.objects.all()
+class VehicleModelViewSets(BaseVehiclesFamilyViewset):
+    serializer_class = serializers.VehicleModelSerializer
+    queryset = VehicleModel.objects.all()

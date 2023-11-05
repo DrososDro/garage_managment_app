@@ -8,6 +8,8 @@ from vehicles.models import VehicleFamily
 pytestmark = pytest.mark.django_db
 
 VEHICLE_FAMILY_URL = reverse("vehicles:vehiclefamily-list")
+VEHICLE_BRAND_URL = reverse("vehicles:vehiclebrand-list")
+VEHICLE_MODEL_URL = reverse("vehicles:vehiclemodel-list")
 
 
 def vehicle_family_url_with_id(id):
@@ -68,7 +70,7 @@ def test_vehicle_family_post(
     """Test vehicle family post"""
     client = auth_client(perm=perm)
     payload = {"name": "audi", "image": temporary_image()}
-    res = client.post(VEHICLE_FAMILY_URL, payload, format="multipart")
+    res = client.post(VEHICLE_FAMILY_URL, payload)
     assert res.status_code == result
     family = VehicleFamily.objects.all()
     assert len(family) == data_len
@@ -159,7 +161,6 @@ def test_vehicle_family_delete(
     perm,
     result,
     data_len,
-    create_vehicle_family,
 ):
     """Test vehicle delete"""
     client = auth_client(perm=perm)
@@ -196,6 +197,44 @@ def test_vehicle_family_get_details(
     assert res.status_code == result
 
 
-def test_families_is_instance_of_BaseFamilies():
+def test_families_is_subclass_of_BaseFamilies():
+    """Test if families is subclass go base families"""
     resolve_cls = resolve(VEHICLE_FAMILY_URL).func.cls
     assert issubclass(resolve_cls, BaseVehiclesFamilyViewset)
+
+
+def test_brand_is_subclass_of_BaseFamilies():
+    """Test if brand is subclass go base families"""
+    resolve_cls = resolve(VEHICLE_BRAND_URL).func.cls
+    assert issubclass(resolve_cls, BaseVehiclesFamilyViewset)
+
+
+def test_model_is_subclass_of_BaseFamilies():
+    """Test if model is subclass go base families"""
+    resolve_cls = resolve(VEHICLE_MODEL_URL).func.cls
+    assert issubclass(resolve_cls, BaseVehiclesFamilyViewset)
+
+
+# # @pytest.mark.xfail
+# def test_model_post_method_create_and_family_and_brand_should_succeed(
+#     auth_client,
+# ):
+#     """Test the vehicle model should able to create and family and brand tags"""
+#
+#     client = auth_client(perm="admin")
+#     import base64
+#     import json
+#     from django.test.client import encode_file, encode_multipart
+#
+#     encode = base64.b64encode(temporary_image().read())
+#
+#     payload = {
+#         "name": "A4",
+#         "image": encode,
+#         "family": {"name": "Road", "image": encode},
+#         "brand": {"name": "Audi"},
+#     }
+#     content_type = "multipart/form-data"
+#     res = client.post(VEHICLE_MODEL_URL, payload, format="json")
+#     print(res.data)
+#     print(res.status_code)

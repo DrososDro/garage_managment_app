@@ -155,6 +155,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(hours=9),
 }
+SPECTACULAR_SETTINGS = {"COMPONENT_SPLIT_REQUEST": True}
 
 
 # set the celery timezone

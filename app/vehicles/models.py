@@ -18,7 +18,7 @@ class VehiclesCategoriesBase(models.Model):
         default=uuid.uuid4, unique=True, primary_key=True, editable=False
     )
     name = models.CharField(max_length=50, unique=True)
-    image = models.ImageField(null=True, upload_to=vehicle_image_path)
+    image = models.FileField(null=True, upload_to=vehicle_image_path)
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
 
