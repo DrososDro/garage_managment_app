@@ -25,7 +25,11 @@ RUN mkdir /coverage  && chmod -R 755 /coverage && \
   --disabled-password \
   --no-create-home \
   django-user && \
-  chown -R django-user:django-user /coverage
+  chown -R django-user:django-user /coverage && \
+  mkdir -p /vol/web/media && \
+  mkdir -p /vol/web/static && \ 
+  chown -R django-user:django-user /vol && \
+  chmod -R 755 /vol
 
 
 ENV PATH="/py/bin:$PATH"
