@@ -17,8 +17,6 @@ class VehicleBrandSerializer(serializers.ModelSerializer):
 
 
 class VehicleModelSerializer(serializers.ModelSerializer):
-    family = VehicleFamilySerializer(read_only=True)
-    brand = VehicleBrandSerializer(read_only=True)
     brands = serializers.CharField(
         required=False,
         write_only=True,
@@ -31,7 +29,7 @@ class VehicleModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VehicleModel
-        fields = ["name", "id", "image", "brand", "family", "families", "brands"]
+        fields = ["name", "id", "image", "families", "brands"]
         read_only_fields = ["id"]
         extra_kwargs = {
             "brands": {
@@ -65,3 +63,28 @@ class VehicleModelSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+class VehicleModelDetailsSerializer(VehicleModelSerializer):
+    family = VehicleFamilySerializer(read_only=True)
+    brand = VehicleBrandSerializer(read_only=True)
+
+    class Meta(VehicleModelSerializer.Meta):
+        fields = VehicleModelSerializer.Meta.fields + [
+            "brand",
+            "family",
+        ]
+
+
+class VehicleBrandDetailsSerializer(VehicleBrandSerializer):
+    vehiclemodel_set = VehicleModelSerializer(read_only=True, many=True)
+
+    class Meta(VehicleBrandSerializer.Meta):
+        fields = VehicleBrandSerializer.Meta.fields + ["vehiclemodel_set"]
+
+
+class VehicleFamilyDetailsSerializer(VehicleFamilySerializer):
+    vehiclemodel_set = VehicleModelSerializer(read_only=True, many=True)
+
+    class Meta(VehicleFamilySerializer.Meta):
+        fields = VehicleFamilySerializer.Meta.fields + ["vehiclemodel_set"]

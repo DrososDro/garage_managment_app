@@ -34,22 +34,47 @@ class BaseVehiclesFamilyViewset(viewsets.ModelViewSet):
                 )(),
             )
 
+    def get_serializer(self, *args, **kwargs):
+        if isinstance(self.serializer_class, list):
+            for serializer in self.serializer_class:
+                if "Details" in serializer.__name__:
+                    details_serializer = serializer
+                else:
+                    other_serializer = serializer
+
+            if self.action == "retrieve":
+                ("details", details_serializer)
+                self.serializer_class = details_serializer
+            else:
+                self.serializer_class = other_serializer
+
+        return super().get_serializer(*args, **kwargs)
+
 
 class VehicleFamilyViewSets(BaseVehiclesFamilyViewset):
     """viewset for VehicleFamily"""
 
-    serializer_class = serializers.VehicleFamilySerializer
+    serializer_class = [
+        serializers.VehicleFamilySerializer,
+        serializers.VehicleFamilyDetailsSerializer,
+    ]
     queryset = VehicleFamily.objects.all()
 
 
 class VehicleBrandViewSets(BaseVehiclesFamilyViewset):
     """Viewset for VehicleBrand"""
 
-    serializer_class = serializers.VehicleBrandSerializer
+    serializer_class = [
+        serializers.VehicleBrandSerializer,
+        serializers.VehicleBrandDetailsSerializer,
+    ]
     queryset = VehicleBrand.objects.all()
 
 
 #
 class VehicleModelViewSets(BaseVehiclesFamilyViewset):
-    serializer_class = serializers.VehicleModelSerializer
+    serializer_class = [
+        serializers.VehicleModelSerializer,
+        serializers.VehicleModelDetailsSerializer,
+    ]
     queryset = VehicleModel.objects.all()

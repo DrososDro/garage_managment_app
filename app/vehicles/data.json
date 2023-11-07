@@ -1,0 +1,82 @@
+[
+  {
+    "model": "vehicles.vehiclefamily",
+    "pk": "aaad033b-d54a-4d6d-bffd-e23694ea3f0b",
+    "fields": {
+      "name": "vehicleFamily1",
+      "image": "",
+      "created_at": "2023-11-07T17:05:30.358Z",
+      "edited_at": "2023-11-07T17:05:30.358Z"
+    }
+  },
+  {
+    "model": "vehicles.vehiclebrand",
+    "pk": "30538a4e-1c22-4d53-869a-693a201ba21a",
+    "fields": {
+      "name": "Brand 1",
+      "image": "",
+      "created_at": "2023-11-07T17:05:30.355Z",
+      "edited_at": "2023-11-07T17:05:30.355Z"
+    }
+  },
+  {
+    "model": "vehicles.vehiclemodel",
+    "pk": "27bcb880-de15-4c6e-8153-82873ea29a00",
+    "fields": {
+      "name": "string",
+      "image": "",
+      "created_at": "2023-11-07T17:05:30.349Z",
+      "edited_at": "2023-11-07T17:05:30.360Z",
+      "brand": "30538a4e-1c22-4d53-869a-693a201ba21a",
+      "family": "aaad033b-d54a-4d6d-bffd-e23694ea3f0b"
+    }
+  },
+  {
+    "model": "vehicles.vehiclemodel",
+    "pk": "27bcb880-de15-4c6e-8153-82873ea29a01",
+    "fields": {
+      "name": "string1",
+      "image": "",
+      "created_at": "2023-11-07T17:05:30.349Z",
+      "edited_at": "2023-11-07T17:05:30.360Z",
+      "brand": "30538a4e-1c22-4d53-869a-693a201ba21a",
+      "family": "aaad033b-d54a-4d6d-bffd-e23694ea3f0b"
+    }
+  },
+  {
+    "model": "vehicles.vehiclemodel",
+    "pk": "27bcb880-de15-4c6e-8153-82873ea29a02",
+    "fields": {
+      "name": "string2",
+      "image": "",
+      "created_at": "2023-11-07T17:05:30.349Z",
+      "edited_at": "2023-11-07T17:05:30.360Z",
+      "brand": "30538a4e-1c22-4d53-869a-693a201ba21a",
+      "family": "aaad033b-d54a-4d6d-bffd-e23694ea3f0b"
+    }
+  },
+  {
+    "model": "vehicles.vehiclemodel",
+    "pk": "27bcb880-de15-4c6e-8153-82873ea29a03",
+    "fields": {
+      "name": "string3",
+      "image": "",
+      "created_at": "2023-11-07T17:05:30.349Z",
+      "edited_at": "2023-11-07T17:05:30.360Z",
+      "brand": "30538a4e-1c22-4d53-869a-693a201ba21a",
+      "family": "aaad033b-d54a-4d6d-bffd-e23694ea3f0b"
+    }
+  },
+  {
+    "model": "vehicles.vehiclemodel",
+    "pk": "27bcb880-de15-4c6e-8153-82873ea29a41",
+    "fields": {
+      "name": "string4",
+      "image": "",
+      "created_at": "2023-11-07T17:05:30.349Z",
+      "edited_at": "2023-11-07T17:05:30.360Z",
+      "brand": "30538a4e-1c22-4d53-869a-693a201ba21a",
+      "family": "aaad033b-d54a-4d6d-bffd-e23694ea3f0b"
+    }
+  }
+]
