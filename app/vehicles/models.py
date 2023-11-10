@@ -58,3 +58,9 @@ class VehicleModel(VehiclesCategoriesBase):
         on_delete=models.SET_NULL,
         null=True,
     )
+
+
+class Vehicle(models.Model):
+    """Model for the vehicle"""
+
+    pass
