@@ -314,7 +314,6 @@ def test_model_patch_method_with_family_and_brand_should_succeed(
 ):
     """Test the vehicle model should able to patch family and brand tags"""
     vh_model = VehicleModel.objects.create(name="machine")
-    print(vh_model.id)
     REV_URL = vehicle_model_rev_id(vh_model.id)
 
     client = auth_client(perm="admin")
@@ -325,7 +324,6 @@ def test_model_patch_method_with_family_and_brand_should_succeed(
         "families": "test",
         "brands": "brand",
     }
-    print(REV_URL)
     res = client.patch(REV_URL, payload, format="multipart")
     assert res.status_code == status.HTTP_200_OK
     assert "A4" == res.data["name"]
@@ -392,7 +390,6 @@ def test_model_put_method_with_family_and_brand_should_succeed(
 ):
     """Test the vehicle model should able to patch family and brand tags"""
     vh_model = VehicleModel.objects.create(name="machine")
-    print(vh_model.id)
     REV_URL = vehicle_model_rev_id(vh_model.id)
 
     client = auth_client(perm="admin")
@@ -403,7 +400,6 @@ def test_model_put_method_with_family_and_brand_should_succeed(
         "families": "test",
         "brands": "brand",
     }
-    print(REV_URL)
     res = client.put(REV_URL, payload, format="multipart")
     assert res.status_code == status.HTTP_200_OK
     assert "A4" == res.data["name"]

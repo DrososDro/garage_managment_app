@@ -58,3 +58,23 @@ class VehicleModel(VehiclesCategoriesBase):
         on_delete=models.SET_NULL,
         null=True,
     )
+
+
+class Vehicle(models.Model):
+    """Vehicle model"""
+
+    id = models.UUIDField(
+        default=uuid.uuid4, primary_key=True, unique=True, editable=False
+    )
+    vin = models.CharField(max_length=200, unique=True)
+    plate_number = models.CharField(unique=True, max_length=10)
+    hp_or_cc = models.CharField(max_length=50)
+    model_id = models.CharField(max_length=50)
+    engine_number = models.CharField(max_length=50)
+    # owner
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now=True)
+    vehicle_model = models.ForeignKey(
+        VehicleModel, on_delete=models.SET_NULL, null=True
+    )
