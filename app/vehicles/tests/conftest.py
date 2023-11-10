@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
 from accounts.models import Permissions
-from vehicles.models import VehicleFamily
+from vehicles.models import VehicleFamily, VehicleModel
 
 
 @pytest.fixture
@@ -28,3 +28,8 @@ def auth_client():
 @pytest.fixture
 def create_vehicle_family():
     return VehicleFamily.objects.create(name="Tractor")
+
+
+@pytest.fixture
+def create_vehicle_model():
+    return VehicleModel.objects.create(name="Arion")
