@@ -1,4 +1,4 @@
-from vehicles.models import VehicleFamily, VehicleBrand, VehicleModel
+from vehicles.models import VehicleFamily, VehicleBrand, VehicleModel, Vehicle
 from rest_framework import serializers
 
 
@@ -8,6 +8,13 @@ class VehicleFamilySerializer(serializers.ModelSerializer):
         fields = ["name", "image", "id"]
         read_only_fields = ["id"]
 
+    def update(self, instance, validated_data):
+        image = validated_data.get("image")
+        if image is not None:
+            instance.image.delete()
+
+        return super().update(instance, validated_data)
+
 
 class VehicleBrandSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,8 +22,17 @@ class VehicleBrandSerializer(serializers.ModelSerializer):
         fields = ["name", "image", "id"]
         read_only_fields = ["id"]
 
+    def update(self, instance, validated_data):
+        image = validated_data.get("image")
+        if image is not None:
+            instance.image.delete()
+
+        return super().update(instance, validated_data)
+
 
 class VehicleModelSerializer(serializers.ModelSerializer):
+    family = VehicleFamilySerializer(read_only=True)
+    brand = VehicleBrandSerializer(read_only=True)
     brands = serializers.CharField(
         required=False,
         write_only=True,
@@ -29,12 +45,19 @@ class VehicleModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VehicleModel
-        fields = ["name", "id", "image", "families", "brands"]
+        fields = [
+            "name",
+            "id",
+            "image",
+            "brand",
+            "family",
+            "families",
+            "brands",
+        ]
         read_only_fields = ["id"]
         extra_kwargs = {
-            "brands": {
-                "write_only": True,
-            }
+            "brands": {"write_only": True},
+            "families": {"write_only": True},
         }
 
     def create(self, validated_data):
@@ -53,6 +76,9 @@ class VehicleModelSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         brands = validated_data.pop("brands", None)
         family = validated_data.pop("families", None)
+        image = validated_data.get("image")
+        if image is not None:
+            instance.image.delete()
         if brands:
             vh_brand, _ = VehicleBrand.objects.get_or_create(name=brands)
             instance.brand = vh_brand
@@ -65,26 +91,6 @@ class VehicleModelSerializer(serializers.ModelSerializer):
         return instance
 
 
-class VehicleModelDetailsSerializer(VehicleModelSerializer):
-    family = VehicleFamilySerializer(read_only=True)
-    brand = VehicleBrandSerializer(read_only=True)
-
-    class Meta(VehicleModelSerializer.Meta):
-        fields = VehicleModelSerializer.Meta.fields + [
-            "brand",
-            "family",
-        ]
-
-
-class VehicleBrandDetailsSerializer(VehicleBrandSerializer):
-    vehiclemodel_set = VehicleModelSerializer(read_only=True, many=True)
-
-    class Meta(VehicleBrandSerializer.Meta):
-        fields = VehicleBrandSerializer.Meta.fields + ["vehiclemodel_set"]
-
-
-class VehicleFamilyDetailsSerializer(VehicleFamilySerializer):
-    vehiclemodel_set = VehicleModelSerializer(read_only=True, many=True)
-
-    class Meta(VehicleFamilySerializer.Meta):
-        fields = VehicleFamilySerializer.Meta.fields + ["vehiclemodel_set"]
+class VehiclesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vehicle

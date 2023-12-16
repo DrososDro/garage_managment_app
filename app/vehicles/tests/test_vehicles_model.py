@@ -50,6 +50,21 @@ def test_create_vehicle_with_existing_vin_should_fail():
 
     payload = {
         "vin": "12345Ab",
+        "plate_number": "nki3522",
+        "model_id": "620",
+        "engine_number": "engine",
+    }
+    Vehicle.objects.create(**payload)
+    with pytest.raises(IntegrityError) as error:
+        veh = Vehicle.objects.create(**payload)
+    assert "duplicate key value violates unique constraint" in str(error.value)
+
+
+def test_create_vehicle_with_existing_plate_number_should_fail():
+    """Test create vehicle with existing plate number"""
+
+    payload = {
+        "vin": "12345Ac",
         "plate_number": "nki3521",
         "model_id": "620",
         "engine_number": "engine",

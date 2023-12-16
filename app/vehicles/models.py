@@ -63,7 +63,6 @@ class VehicleModel(VehiclesCategoriesBase):
 class Vehicle(models.Model):
     """Model for the vehicle"""
 
-
     id = models.UUIDField(
         default=uuid.uuid4, primary_key=True, unique=True, editable=False
     )

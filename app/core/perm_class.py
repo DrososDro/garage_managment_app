@@ -15,5 +15,4 @@ class UserPermissions(BasePermission):
                     return True
 
                 return False
-
         return False
